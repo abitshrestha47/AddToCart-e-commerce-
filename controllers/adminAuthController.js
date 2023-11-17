@@ -30,7 +30,7 @@ export const authenticateAdmin=async(req,res)=>{
         if(!passwordValid){
             return res.status(401).json({message:'Password is incorrect!'});
         }
-        jwtSign(res,EmailFound,0)
+        await jwtSign(res, EmailFound, 0)
         res.status(200).json({message:'Login successful!'});
     }catch(err){
         console.log(err.message);
