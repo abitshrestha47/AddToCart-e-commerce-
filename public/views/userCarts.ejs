@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+         .navbar-nav .nav-item.active .nav-link {
+            color: rgb(7, 222, 222); 
+        }
+    </style>
+</head>
+<body>
+    <%- include('userNavbar.ejs') %>
+    <div class="cartContainer p-lg-5">
+        <table class="table table-striped cart-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="cartTableBody">
+            </tbody>
+        </table>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        const table=document.querySelector('.table');
+        const tbody=document.getElementById('cartTableBody');
+        async function getCarts(){
+            try{
+                const response=await fetch(`http://localhost:5000/my-carts`);
+                const cartData=await response.json();
+                console.log(cartData);
+                cartData.forEach(async(item)=>{
+                    const row=table.insertRow();
+                    const productResponse=await fetch(`http://localhost:5000/products/${item.product}`);
+                    const productData=await productResponse.json();
+                    const cell1=row.insertCell(0);
+                    cell1.textContent=productData.productName;
+                    const cell2=row.insertCell(1);
+                    cell2.textContent=productData.productPrice;
+                    const cell3=row.insertCell(2)
+                    cell3.textContent=item.quantity;
+                    const cell4=row.insertCell(3);
+                    cell4.textContent=item.total;
+                    tbody.appendChild(row);
+                });
+            }catch(err){
+                console.log(err.message);
+            }
+        }
+        getCarts();
+        async function getCartCount(){
+            try{
+                const response=await fetch(`http://localhost:5000/my-carts`);
+                const cartData=await response.json();
+                console.log(cartData);
+                if(cartData.length){
+                    const cartCountElement=document.getElementById('cartCount');
+                    cartCountElement.textContent=`Cart (${cartData.length})`;
+                }
+            }catch(err){    
+                console.log(err.message);
+            }
+        }
+        getCartCount();
+    </script>
+
+</body>
+</html>

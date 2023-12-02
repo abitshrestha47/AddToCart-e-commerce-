@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <style>
+        /* Custom styles for the navbar */
+        .navbar-brand {
+            margin-right: 20px;
+        }
+        .navbar-nav .nav-item {
+            margin-right: 10px;
+        }
+        .card {
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        .navbar-nav .nav-item.active .nav-link {
+            color: rgb(86, 255, 255); 
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <%- include('userNavbar.ejs') %>
+
+    <div class="container mt-5">
+        <div class="row" id="productsContainer">
+            <!-- Product Cards -->
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const productsContainer=document.getElementById('productsContainer');
+        async function getProducts(){
+            try{
+                const response=await fetch(`http://localhost:5000/products`);
+                const products=await response.json();
+                products.forEach(product=>{
+                    const productCard=document.createElement("div");
+                    productCard.classList.add('col-md-3','mb-4');
+                    productCard.innerHTML=`
+                        <div class="card">
+                            <img src="http://localhost:5000/images/${product.productImage}" height="300" class="card-img-top">
+                            <div class="card-body">
+                                <h5 class="card-title">${product.productName}</h5>
+                                <p class="card-text">${product.productDescription}</p>
+                                <p class="card-text price">Price: Rs.${product.productPrice}</p>
+                                <div class="quantity-control">
+                                        <label class="col-4">Quantity:</label>
+                                        <div class="col-12">
+                                            <input type="number" class="form-control quantity" min="1" value="1" id="${product._id}">
+                                        </div>
+                                </div>     
+                                <p class="card-text mt-2">Total:<span id="total-${product._id}" class="total"></span></p>
+                                <button class="btn btn-primary cartBtn" data-product="${product._id}" id="cartBtn-${product._id}">Add to Cart</button>
+                            </div>
+                        </div>
+                    `;
+                    productsContainer.appendChild(productCard);
+                    const quantityInputs=document.querySelectorAll('.quantity');
+                    quantityInputs.forEach((quantityInput)=>{
+                        quantityInput.addEventListener('input', updateTotal);
+                        updateTotal({ target: quantityInput });
+                    });
+                    function updateTotal(event){
+                        const quantityInput=event.target;
+                        const productCard=quantityInput.closest('.card');
+                        const priceText=productCard.querySelector('.price').textContent;
+                        const priceMatch = priceText.match(/Rs\.(\d+(\.\d+)?)/);
+                        const productPrice=parseFloat(priceMatch[1]);
+                        const quantity=parseInt(quantityInput.value);
+
+                        const totalInput=productCard.querySelector('.total');
+
+                        const total=productPrice*quantity;
+                        totalInput.textContent = ` Rs.${total.toFixed(2)}`;
+                    }
+                });
+                productsContainer.addEventListener('click',async(e)=>{
+                    if(e.target && e.target.classList.contains('cartBtn')){
+                        e.preventDefault();
+                        const productId = e.target.getAttribute('data-product');
+                        const quantity = document.getElementById(productId).value;
+                        const totalPrice=document.getElementById(`total-${productId}`).textContent;
+                        const totalMatch = totalPrice.match(/Rs\.(\d+(\.\d+)?)/);
+                        const total=parseFloat(totalMatch[1]);
+                        const formData = new FormData();
+                        formData.append('productId', productId);
+                        formData.append('quantity', quantity);
+                        formData.append('total', total);
+                        const data = new URLSearchParams(formData);
+                        try {
+                            const response = await fetch(`http://localhost:5000/carts`, {
+                                method: 'POST',
+                                body: data,
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                }
+                            });
+                            if (response.status === 403) {
+                                window.location.href = '/users/login';
+                            }
+                        } catch (err) {
+                            console.log(err.message);
+                        }
+                    }
+                });
+            }catch(err){
+                console.log(err.message);
+            }
+        }
+        getProducts();
+        async function getCartCount(){
+            try{
+                const response=await fetch(`http://localhost:5000/my-carts`);
+                const cartData=await response.json();
+                if(cartData.length){
+                    const loginLogout=document.getElementById('loginLogout');
+                    const cartCountElement=document.getElementById('cartCount');
+                    cartCountElement.textContent=`Cart (${cartData.length})`;
+                    loginLogout.textContent=`Logout`;
+                }
+                else{
+                    loginLogout.textContent=`Login`;
+                }
+            }catch(err){    
+                console.log(err.message);
+            }
+        }
+        getCartCount();
+        // async function getUserProfile(){
+        //     try{
+        //         const response=await fetch(`http://localhost:3000/users/profile`);
+        //         const userProfile=await response.json();
+        //         console.log(userProfile);
+        //         if(userProfile.length){
+        //             const profile=document.getElementById('profile');
+        //             userProfile.forEach(user=>{
+        //                 profile.textContent=`${user.username}`;
+        //             });
+        //         }
+        //     }catch(err){        
+        //         console.log(err.message);
+        //     }
+        // }
+        // getUserProfile();
+    </script>
+</body>
+</html>

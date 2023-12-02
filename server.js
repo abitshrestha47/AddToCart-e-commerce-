@@ -8,7 +8,10 @@ import path from 'path';
 import cookieParser from 'cookie-parser';
 import {adminAuthRoutes} from './routes/adminAuthRoutes.js';
 import { productRoutes } from './routes/productRoutes.js';
+import { userRouter } from './routes/userRoutes.js';
+import { cartRouter } from './routes/cartRoutes.js';
 connectDB();
+
 
 app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());
@@ -19,6 +22,8 @@ app.use(express.static(path.resolve(__dirname,'public','assets')));
 app.use(express.static('public', { 'extensions': ['html', 'htm', 'js'] }));
 app.use('/',adminAuthRoutes);
 app.use('/',productRoutes);
+app.use('/',userRouter);
+app.use('/',cartRouter);
 app.listen(PORT,()=>{
     console.log(`listening on http://localhost:${PORT}`);
 });

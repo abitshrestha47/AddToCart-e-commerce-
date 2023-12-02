@@ -16,6 +16,19 @@ export const jwtSign=async (res,token_holder,type)=>{
             secure:process.env.NODE_ENV==='production',
         });
     }
+    else if(type===1){
+        const token=jwt.sign(
+            {_id:token_holder?._id,email:token_holder?.email,userType:'user'},
+            USER_SECRET_KEY,
+            {
+                expiresIn:'1hr',
+            }
+        );
+        res.cookie('access_token',token,{
+            httpOnly:true,
+            secure:process.env.NODE_ENV==='production',
+        });
+    }
 }
 
 export const validateJWT=(type)=>async(req,res,next)=>{
@@ -26,6 +39,10 @@ export const validateJWT=(type)=>async(req,res,next)=>{
     try{
         if(type===0){
             decodeToken(token,ADMIN_SECRET_KEY);
+            return next();
+        }
+        else if(type===1){
+            decodeToken(token,USER_SECRET_KEY);
             return next();
         }
     }catch(err){

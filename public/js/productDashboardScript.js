@@ -72,7 +72,7 @@ async function getProducts() {
         document.getElementById("storedImage").src = productImageSrc;
 
         const initialData = {
-          productName: productName,
+          productName: productName,   
           productDescription: productDescription,
           productImage: productImageSrc,
           productQuantity: productQuantity,
@@ -149,7 +149,20 @@ async function getProducts() {
 
       const deleteButton = document.createElement("button");
       deleteButton.textContent = "Delete";
+      deleteButton.setAttribute('data-product-id',product._id);
       deleteButton.classList.add("btn", "btn-danger");
+
+      deleteButton.addEventListener('click',async function(){
+          const productId=deleteButton.getAttribute('data-product-id');
+          try{
+            const response=await fetch(`http://localhost:5000/products/${productId}`,{
+              method:'DELETE'
+            });
+            console.log(response);
+          }catch(err){
+            console.log(err.message);
+          }
+      });
 
       actionCell.appendChild(editButton);
       actionCell.appendChild(deleteButton);

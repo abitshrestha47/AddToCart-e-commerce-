@@ -2,7 +2,7 @@ import express from 'express';
 export const productRoutes=express.Router();
 import { upload } from '../utils/multerConfig.js';
 import {validateJWT} from '../utils/jwtUtils.js';
-import { addProduct,getProduct,editProduct} from '../controllers/productController.js';
+import { addProduct,getProduct,editProduct,deleteProduct    } from '../controllers/productController.js';
 
 
 productRoutes.get('/product-dashboard',validateJWT(0),(req,res)=>{
@@ -13,3 +13,4 @@ productRoutes.post('/products',upload.single('productImage'),addProduct);
 productRoutes.get('/products',getProduct);
 productRoutes.get('/products/:id',getProduct);
 productRoutes.patch('/products/:id',upload.single('productImage'),editProduct);
+productRoutes.delete('/products/:id',deleteProduct);

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .alert-success {
+            display: none;
+        }
+    </style> 
+    
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <%- include('sidebar.html') %>
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <%- include('navbar.html') %>
+            <!-- Content goes here -->
+
+            <!-----------------------------------Table Contents Starts-------------------------------------->
+            <table class="table table-striped cart-table">
+                <thead>
+                    <tr>
+                        <th>UserName</th>
+                        <th>Email</th>
+                        <th>Product Name</th>
+                        <th>Product Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="productTableBody">
+                </tbody>
+            </table>
+            <!-------------------------------------Table Contents Ends-------------------------------------->
+        </main> 
+
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    const table=document.querySelector('.cart-table')
+    const tbody=document.getElementById('productTableBody');
+    async function getCarts(){
+        try{
+            const response=await fetch(`http://localhost:3000/carts`);
+            const cartData=await response.json();
+            console.log(cartData);
+            cartData.forEach(async(item)=>{
+                const productResponse=await fetch(`http://localhost:3000/products/${item.product}`);
+                const productData=await productResponse.json();
+                const userResponse=await fetch(`http://localhost:3000/users/${item.user}`);
+                const userData=await userResponse.json();
+                const row=table.insertRow();
+                const cell1=row.insertCell(0);
+                cell1.textContent=userData.username;
+                const cell2=row.insertCell(1);
+                cell2.textContent=userData.email;
+                const cell3=row.insertCell(2);
+                cell3.textContent=productData.productName;
+                const cell4=row.insertCell(3);
+                cell4.textContent=productData.productPrice;
+                const cell5=row.insertCell(4);
+                cell5.textContent=item.quantity;
+                const cell6=row.insertCell(5);
+                cell6.textContent=item.total;
+                tbody.appendChild(row);
+            })
+        }catch(err){
+            console.log(err.message);
+        }
+    }
+    getCarts();
+</script>
+</body>
+</html>
